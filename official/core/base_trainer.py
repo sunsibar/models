@@ -370,16 +370,6 @@ class Trainer(_AsyncTrainer):
     """Accesses the training checkpoint."""
     return self._checkpoint
 
-  # TODO(yejiayu): Remove this once all deps are fixed.
-  def add_recovery(self, params: TrainerConfig,
-                   checkpoint_manager: tf.train.CheckpointManager):
-    if params.recovery_max_trials >= 0:
-      self._recovery = Recovery(
-          loss_upper_bound=params.loss_upper_bound,
-          recovery_begin_steps=params.recovery_begin_steps,
-          recovery_max_trials=params.recovery_max_trials,
-          checkpoint_manager=checkpoint_manager)
-
   def train_loop_end(self):
     """See base class."""
     self.join()
@@ -403,7 +393,10 @@ class Trainer(_AsyncTrainer):
     """See base class."""
 
     def step_fn(inputs):
-      task_train_step = self.task.train_step
+      if self.config.runtime.enable_xla and (self.config.runtime.num_gpus > 0):
+        task_train_step = tf.function(self.task.train_step, jit_compile=True)
+      else:
+        task_train_step = self.task.train_step
       logs = task_train_step(
           inputs,
           model=self.model,
