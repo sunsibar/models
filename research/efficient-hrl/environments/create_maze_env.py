@@ -15,6 +15,10 @@
 
 from environments.ant_maze_env import AntMazeEnv
 from environments.point_maze_env import PointMazeEnv
+import gym
+import gym_minigrid
+
+
 
 import tensorflow as tf
 import gin.tf
@@ -38,6 +42,12 @@ def create_maze_env(env_name=None, top_down_view=False):
     manual_collision = True
     env_name = env_name[5:]
     maze_size_scaling = 4
+  elif env_name.startswith('MiniGrid'):
+    env = gym.make(env_name)
+    env = gym_minigrid.wrappers.ContinuousActions(env)
+    env =  gym_minigrid.wrappers.ImgObsWrapper(env)  # Get rid of the 'mission' field
+    manual_collision = True
+    maze_size_scaling = 1
   else:
     assert False, 'unknown env %s' % env_name
 
@@ -58,6 +68,11 @@ def create_maze_env(env_name=None, top_down_view=False):
     maze_id = 'BlockMaze'
     put_spin_near_agent = True
     observe_blocks = True
+  elif env_name.startswith('MiniGrid'):
+    maze_id = "MiniGrid"
+    put_spin_near_agent = True
+    observe_blocks = True
+
   else:
     raise ValueError('Unknown maze environment %s' % env_name)
 
@@ -70,7 +85,10 @@ def create_maze_env(env_name=None, top_down_view=False):
       'manual_collision': manual_collision,
       'maze_size_scaling': maze_size_scaling
   }
-  gym_env = cls(**gym_mujoco_kwargs)
+  if not env_name.startswith('MiniGrid'):
+    gym_env = cls(**gym_mujoco_kwargs)
+  else:
+    gym_env = env
   gym_env.reset()
   wrapped_env = gym_wrapper.GymWrapper(gym_env)
   return wrapped_env
