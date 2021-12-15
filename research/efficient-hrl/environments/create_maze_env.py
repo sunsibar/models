@@ -44,7 +44,7 @@ def create_maze_env(env_name=None, top_down_view=False):
     maze_size_scaling = 4
   elif env_name.startswith('MiniGrid'):
     env = gym.make(env_name)
-    env = gym_minigrid.wrappers.ContinuousActions(env)
+    env = gym_minigrid.wrappers.ContinuousActions(env, flatten=True)
     env =  gym_minigrid.wrappers.ImgObsWrapper(env)  # Get rid of the 'mission' field
     manual_collision = True
     maze_size_scaling = 1
