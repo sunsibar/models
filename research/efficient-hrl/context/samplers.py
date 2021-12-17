@@ -147,6 +147,7 @@ class RandomSampler(BaseSampler):
           axis=1)
     else: raise NotImplementedError(context_range)
     self._validate_contexts(contexts)
+    contexts = tf.Print(contexts, "Samplers were used!!! ")
     state, next_state = kwargs['state'], kwargs['next_state']
     if state is not None and next_state is not None:
       pass

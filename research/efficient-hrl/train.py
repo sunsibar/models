@@ -407,7 +407,8 @@ def train_uvf(train_dir,
       episode_rewards=episode_rewards,
       episode_meta_rewards=episode_meta_rewards,
       store_context=True,
-      disable_agent_reset=False,
+      disable_agent_reset=True #,
+      #disable_agent_reset=False,
   )
 
   # Create train ops
@@ -426,7 +427,8 @@ def train_uvf(train_dir,
       episode_rewards=episode_rewards,
       episode_meta_rewards=episode_meta_rewards,
       store_context=True,
-      disable_agent_reset=False,
+      disable_agent_reset=True,
+      #disable_agent_reset=False,
   )
 
   train_op_list = []
@@ -456,6 +458,7 @@ def train_uvf(train_dir,
       states, actions, rewards, discounts, next_states = batch[:5]
       with tf.name_scope('Reward'):
         tf.summary.scalar('average_step_reward', tf.reduce_mean(rewards))
+        rewards = tf.Print(rewards, [mode, "10 of current 100 rewards:", rewards[:10]])
       rewards *= reward_scale_factor
       batch_queue = slim.prefetch_queue.prefetch_queue(
           [states, actions, rewards, discounts, next_states] + batch[5:],
@@ -656,6 +659,10 @@ def train_uvf(train_dir,
 
   train_saver = tf.train.Saver(max_to_keep=2, sharded=True)
   tf.logging.info('train dir: %s', train_dir)
+
+  # debugging
+  from tensorflow.python import debug as tf_debug
+
   return slim.learning.train(
       train_ops,
       train_dir,
@@ -667,4 +674,5 @@ def train_uvf(train_dir,
       master="",
       is_chief=(FLAGS.task == 0),
       save_summaries_secs=FLAGS.save_summaries_secs,
-      init_fn=initialize_training_fn)
+      init_fn=initialize_training_fn) #,
+      #session_wrapper=tf_debug.LocalCLIDebugWrapperSession)
