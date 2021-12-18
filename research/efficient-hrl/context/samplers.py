@@ -132,8 +132,8 @@ class RandomSampler(BaseSampler):
           dtype=spec.dtype)
     elif isinstance(context_range[0], (list, tuple, np.ndarray)):
       assert len(spec.shape.as_list()) == 1
-      assert spec.shape.as_list()[0] == len(context_range[0])
-      assert spec.shape.as_list()[0] == len(context_range[1])
+      #assert spec.shape.as_list()[0] == len(context_range[0])
+      #assert spec.shape.as_list()[0] == len(context_range[1])
       contexts = tf.concat(
           [
               tf.random_uniform(
@@ -147,7 +147,9 @@ class RandomSampler(BaseSampler):
           axis=1)
     else: raise NotImplementedError(context_range)
     self._validate_contexts(contexts)
-    contexts = tf.Print(contexts, "Samplers were used!!! ")
+    # contexts = tf.Print(contexts, ["Samplers were used!!! "])
+    # import sys
+    # tf.print("Samplers were used!!! ", output_stream=sys.stderr)
     state, next_state = kwargs['state'], kwargs['next_state']
     if state is not None and next_state is not None:
       pass
@@ -434,8 +436,8 @@ class DirectionSampler(RandomSampler):
            tf.random_normal(tf.shape(state[:, :self._k]), dtype=state.dtype) +
            tf.random_shuffle(state[:, :self._k]) - state[:, :self._k],
            other_contexts[:, self._k:]], 1)
-      #contexts = tf.Print(contexts,
-      #                    [contexts, tf.reduce_max(contexts, 0),
+      # contexts = tf.Print(contexts,
+      #                    ["\n Contexts: ", contexts, tf.reduce_max(contexts, 0),
       #                     tf.reduce_min(state, 0), tf.reduce_max(state, 0)], 'contexts', summarize=15)
       next_contexts = tf.concat( #LALA
           [state[:, :self._k] + contexts[:, :self._k] - next_state[:, :self._k],

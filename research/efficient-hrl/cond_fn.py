@@ -87,6 +87,8 @@ def every_n_steps(agent,
   """
   del agent, state, action, transition_type, num_episodes
   cond = tf.equal(tf.mod(environment_steps, n), 0)
+  cond = tf.cond(cond, lambda: tf.Print(cond, ["Reached end of enviroment. N was: ", environment_steps, "n was: ", n]),
+                 lambda: cond )
   return cond
 
 

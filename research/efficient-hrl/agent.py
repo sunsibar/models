@@ -355,7 +355,7 @@ class UvfAgentCore(object):
        state_reprs, next_state_reprs) = batch_items[:6]
       context_reward = self.compute_rewards(
           mode, state_reprs, actions, rewards, next_state_reprs,
-          batch_items[6:])[0][0]
+          batch_items[6:])[0][0]    # self.reward_fun: is negative distance
       context_reward = tf.cast(context_reward, dtype=reward.dtype)
       if self.meta_agent is not None:
         meta_action = tf.concat(self.context_vars, -1)
@@ -364,9 +364,11 @@ class UvfAgentCore(object):
         batch_items = [tf.expand_dims(item, 0) for item in items]
         (states, meta_actions, rewards, next_states,
          state_reprs, next_state_reprs) = batch_items[:6]
-        meta_reward = self.meta_agent.compute_rewards(
-            mode, states, meta_actions, rewards,
-            next_states, batch_items[6:])[0][0]
+        # meta_reward = self.meta_agent.compute_rewards(
+        #     mode, states, meta_actions, rewards,
+        #     next_states, batch_items[6:])[0][0]  # is currently (dec 18th 21) "plain rewards"
+        meta_reward = rewards
+        # meta_reward = tf.Print(meta_reward, ["Meta rewards, in agent.py, is now: ", meta_reward])
         meta_reward = tf.cast(meta_reward, dtype=reward.dtype)
       else:
         meta_reward = tf.constant(0, dtype=reward.dtype)

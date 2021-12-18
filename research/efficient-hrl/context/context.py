@@ -77,7 +77,17 @@ class Context(object):
     else:
       self.context_ranges = [None] * len(self._context_shapes)
 
-    self.context_as_action_specs = tuple([
+    if len(self._context_shapes) == 1:
+      self.context_as_action_specs = tuple([
+        specs.BoundedTensorSpec(
+          shape=self._context_shapes[0],
+          dtype=(tf.float32 if self._obs_spec.dtype in
+                               [tf.float32, tf.float64] else self._obs_spec.dtype),
+          minimum=self.context_ranges[0],
+          maximum=self.context_ranges[-1])
+      ])
+    else:
+      self.context_as_action_specs = tuple([
         specs.BoundedTensorSpec(
             shape=shape,
             dtype=(tf.float32 if self._obs_spec.dtype in
@@ -96,6 +106,8 @@ class Context(object):
       raise ValueError(
           'variable_indices (%s) must have the same length as contexts (%s).' %
           (self.variable_indices, self.context_specs))
+    if self.n != len(self.context_ranges):
+      self.context_ranges = [self.context_ranges]
     assert self.n == len(self.context_ranges)
     assert self.n == len(self.state_indices)
 
